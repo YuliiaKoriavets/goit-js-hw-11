@@ -16,8 +16,8 @@ let searchQuery = '';
 let page = 1;
 
 async function createPhotoGallery() {
-    try {
-        const response = await fetchPhotos(searchQuery, page)
+  try {
+    const response = await fetchPhotos(searchQuery, page);
 
     let totalPages = response.totalHits / 40;
 
@@ -87,10 +87,10 @@ const handleSearchGalleryCards = async event => {
 
 searchFormEl.addEventListener('submit', handleSearchGalleryCards);
 
-const handleClickMoreCards = async event => {
+const handleClickMoreCards = event => {
   try {
     page += 1;
-    await createPhotoGallery();
+    createPhotoGallery();
   } catch (err) {
     console.warn(err);
   }
