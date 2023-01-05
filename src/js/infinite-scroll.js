@@ -24,7 +24,6 @@ const options = {
 
 const observer = new IntersectionObserver(async (entries, observe) => {
   const [targetEl] = entries;
-  console.log(targetEl);
 
   if (targetEl.isIntersecting) {
     page += 1;
