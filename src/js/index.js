@@ -15,11 +15,13 @@ let simplelightboxGallery = new SimpleLightbox('.gallery a');
 let searchQuery = '';
 let page = 1;
 
-function createPhotoGallery() {
-  fetchPhotos(searchQuery, page).then(({ hits, totalHits }) => {
-    let totalPages = totalHits / 40;
+async function createPhotoGallery() {
+    try {
+        const response = await fetchPhotos(searchQuery, page)
 
-    if (totalHits === 0) {
+    let totalPages = response.totalHits / 40;
+
+    if (response.totalHits === 0) {
       return Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
       );
@@ -27,15 +29,15 @@ function createPhotoGallery() {
 
     galleryContainerEl.insertAdjacentHTML(
       'beforeend',
-      createGalleryCards(hits)
+      createGalleryCards(response.hits)
     );
+
+    if (page === 1) {
+      Notify.success(`Hooray! We found ${response.totalHits} images.`);
+    }
 
     simplelightboxGallery.refresh();
     loadMoreBtnEl.classList.remove('is-hidden');
-
-    if (page === 2) {
-      Notify.success(`Hooray! We found ${totalHits} images.`);
-    }
 
     if (page >= 2) {
       const { height: cardHeight } = document
@@ -54,7 +56,9 @@ function createPhotoGallery() {
         "We're sorry, but you've reached the end of search results."
       );
     }
-  });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function updateGallery() {
@@ -63,24 +67,33 @@ function updateGallery() {
   loadMoreBtnEl.classList.add('is-hidden');
 }
 
-const handleSearchGalleryCards = event => {
+const handleSearchGalleryCards = async event => {
   event.preventDefault();
-  updateGallery();
-  searchQuery = event.target.searchQuery.value.trim();
 
-  if (searchQuery === '') {
-    return Notify.warning(
-      'Oops, the input field is empty. Please enter search query again.'
-    );
+  try {
+    updateGallery();
+    searchQuery = event.target.searchQuery.value.trim();
+
+    if (searchQuery === '') {
+      return Notify.warning(
+        'Oops, the input field is empty. Please enter search query again.'
+      );
+    }
+    await createPhotoGallery();
+  } catch (err) {
+    console.warn(err);
   }
-  createPhotoGallery();
 };
 
 searchFormEl.addEventListener('submit', handleSearchGalleryCards);
 
-const handleClickMoreCards = event => {
-  page += 1;
-  createPhotoGallery();
+const handleClickMoreCards = async event => {
+  try {
+    page += 1;
+    await createPhotoGallery();
+  } catch (err) {
+    console.warn(err);
+  }
 };
 
 loadMoreBtnEl.addEventListener('click', handleClickMoreCards);
